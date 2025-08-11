@@ -1,19 +1,25 @@
-/* Minimal COOP/COEP service worker to enable WASM threads/SIMD */
+// Minimal COOP/COEP service worker for cross-origin isolation
 self.addEventListener('install', () => self.skipWaiting())
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()))
 self.addEventListener('fetch', (event) => {
-  const req = event.request
-  const headers = new Headers(req.headers)
-  headers.set('Cross-Origin-Opener-Policy', 'same-origin')
-  headers.set('Cross-Origin-Embedder-Policy', 'require-corp')
-  event.respondWith(
-    fetch(req, { mode: 'no-cors' }).then((res) => {
-      const newHeaders = new Headers(res.headers)
-      newHeaders.set('Cross-Origin-Opener-Policy', 'same-origin')
-      newHeaders.set('Cross-Origin-Embedder-Policy', 'require-corp')
-      return new Response(res.body, { status: res.status, statusText: res.statusText, headers: newHeaders })
-    })
-  )
+  const request = event.request
+  const newHeaders = new Headers(request.headers)
+  event.respondWith((async () => {
+    try {
+      const response = await fetch(request)
+      const modified = new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+      })
+      const headers = new Headers(modified.headers)
+      headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+      headers.set('Cross-Origin-Embedder-Policy', 'require-corp')
+      return new Response(modified.body, { status: modified.status, statusText: modified.statusText, headers })
+    } catch (e) {
+      return fetch(request)
+    }
+  })())
 })
 
 

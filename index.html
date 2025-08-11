@@ -11,15 +11,9 @@
   <body>
     <div id="root"></div>
     <script>
-      // Registrador de COOP/COEP em produção (coi-serviceworker)
-      if (location.pathname !== '/favicon.ico') {
-        if ('serviceWorker' in navigator) {
-          window.addEventListener('load', () => {
-            navigator.serviceWorker
-              .register('/coi-serviceworker.js')
-              .catch(() => {})
-          })
-        }
+      // Registra service worker de isolamento COOP/COEP quando em produção
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/coi-serviceworker.js').catch(() => {})
       }
     </script>
     <script type="module" src="/src/main.tsx"></script>

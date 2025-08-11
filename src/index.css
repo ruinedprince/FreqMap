@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
-/* Camadas utilitárias adicionais (opcional) */
-@layer base {
-  html, body, #root {
-    height: 100%;
+/* Camada utilitária mínima para layout base */
+@layer utilities {
+  .container-app {
+    @apply mx-auto max-w-5xl p-6;
   }
 }
