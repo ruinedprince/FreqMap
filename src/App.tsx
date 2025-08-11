@@ -1,11 +1,12 @@
-import { useState } from 'react'
+// no React state needed at the moment
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import './index.css'
+import Upload from './components/Upload'
+import Waveform from './components/Waveform'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
@@ -18,13 +19,12 @@ function App() {
         </a>
       </div>
       <h1 className="text-2xl font-semibold">FreqMap</h1>
-      <div className="mt-4">
-        <button className="px-4 py-2 rounded bg-blue-600 text-white" onClick={() => setCount((c) => c + 1)}>
-          count is {count}
-        </button>
+      <div className="mt-4 container-app">
+        <Upload />
+        <Waveform />
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
+      <p className="read-the-docs mt-4 text-sm text-slate-400">
+        Carregue um arquivo de áudio (WAV/MP3) para visualizar a forma de onda.
       </p>
     </>
   )
