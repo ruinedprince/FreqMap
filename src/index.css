@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Camadas utilitárias adicionais (opcional) */
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+}
