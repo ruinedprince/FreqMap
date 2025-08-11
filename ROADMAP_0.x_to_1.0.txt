@@ -1,0 +1,76 @@
+FreqMap — Roadmap v0.x -> v1.0
+================================
+
+Objetivo: Evoluir do MVP local-first para uma ferramenta robusta de diagnóstico vocal com análise por trechos, perfis de gênero e exportação de planos.
+
+Versão 0.1 — Bootstrap (ENTREGUE)
+- Vite + React + TypeScript
+- Tailwind v4
+- COOP/COEP (dev/preview) + coi-serviceworker
+- Git + GitHub (branch main)
+
+Versão 0.2 — Upload, Decodificação e Visual Básica
+- Upload de arquivos (WAV/MP3; detectar FLAC)
+- Decodificação via Web Audio API
+- Visualização de waveform (wavesurfer.js) e marcação de regiões
+- Estrutura de estado (Zustand) e separação de camadas (UI vs Worker)
+- Esqueleto de Worker (Comlink)
+
+Versão 0.3 — Segmentação e Métricas Essenciais
+- Segmentação por novidade espectral + detecção de silêncio
+- Métricas por segmento: pico, RMS, bandas (20–120, 120–500, 500–2k, 2–5k, 5–10k)
+- Métricas globais: LUFS integrado/short-term (ebur128-wasm)
+- Estéreo: Mid/Side básico
+- UI: tabela/lista de segmentos com indicadores de issues
+
+Versão 0.4 — Pitch e Tonalidade com Validação
+- Pitch tracking (YIN/pyin em essentia.js)
+- Cromas + KeyExtractor com confiança
+- Validação/override da tonalidade informada pelo usuário
+- UI: badge de confiança e conflito "corrigido"
+
+Versão 0.5 — Sibilância e Ressonâncias
+- Sibilância: razão de energia 6–10 kHz vs 1–5 kHz
+- Ressonâncias: detecção de picos estreitos persistentes por segmento
+- UI: destaque visual por trecho (regiões/heatmap)
+
+Versão 0.6 — Plano de Mixagem (v1)
+- Mapeamento determinístico -> sugestões: EQ, de-esser, compressão, reverb
+- Estéreo: alvo Mid/Side nas sugestões
+- Schema plan.json (v1) e analysis.json (v1) com Zod
+- UI: plano global + por segmento com explicações
+
+Versão 0.7 — Exportação e Presets
+- Exportação JSON e PDF (pdf-lib)
+- Salvar/Carregar presets locais (IndexedDB)
+- File System Access API: salvar em pasta escolhida
+
+Versão 0.8 — Performance e Degradação
+- Carregamento lazy de WASM (essentia, ebur128, ffmpeg)
+- Ajuste automático de parâmetros por capacidade do dispositivo
+- Refinamento progressivo (segmentos problemáticos)
+
+Versão 0.9 — Qualidade e Telemetria Local (opt-in)
+- Testes de robustez com lote de áudios variados
+- Consolidação de thresholds por gênero
+- Estatísticas agregadas locais (IndexedDB) e exportação manual de dataset anonimizado (opt-in)
+
+Versão 1.0 — Estabilidade e Polimento
+- Revisão UX (wizard completo)
+- Documentação completa de APIs internas e schemas
+- Licenciamento e página "Sobre/Privacidade"
+- Suporte a FLAC via ffmpeg.wasm (lazy) com fallback robusto
+
+Extras pós-1.0 (Backlog)
+- Integração com DAWs via export de presets
+- Modo híbrido opcional (cloud assistida) — desativado por padrão
+- Suporte multifaixas (voz + instrumentos)
+
+Marco de Qualidade
+- p95 de análise de 5 min estéreo <= 25s em mobile intermediário no modo rápido
+- Precisão de key detection com confiança alta >= 0.75 em >= 80% dos casos
+- Satisfação do usuário (NPS interno) >= 8/10 durante beta
+
+Notas
+- Todas as versões são locais (sem backend) e devem manter privacidade by design.
+- Cada versão incrementa sem quebrar analysis.json e plan.json (salvo mudança major com migração explícita).

@@ -1,69 +1,63 @@
-# React + TypeScript + Vite
+# FreqMap — Aplicação Web de Diagnóstico Vocal para Mixagem (v0.x)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicação web 100% local-first que analisa faixas de voz e gera um plano técnico de mixagem baseado em parâmetros acústicos e perfis de gênero musical. O app não altera o áudio: produz um diagnóstico detalhado e recomendações para uso na sua DAW.
 
-Currently, two official plugins are available:
+## Visão geral
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Processamento 100% local no dispositivo do usuário (privacidade e baixa latência)
+- Suporte a estéreo (análise Mid/Side)
+- Análise por trechos (segmentação temporal) com sugestões específicas por intervalo
+- Exportação de plano em JSON/PDF e armazenamento local versionado
 
-## Expanding the ESLint configuration
+## Stack (v0.1)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Frontend: React + TypeScript (Vite)
+- Estilos: Tailwind CSS v4
+- Performance para WASM/Threads: COOP/COEP configurado em dev/preview + `coi-serviceworker`
+- Estado: (a definir nas próximas versões; ex.: Zustand)
+- Visualização: (próximas versões; ex.: wavesurfer.js, uPlot)
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Status atual (v0.1)
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- Projeto inicial criado com Vite + React + TS
+- Tailwind v4 habilitado (ver `src/index.css`)
+- Cabeçalhos COOP/COEP no `vite.config.ts` e registro de `public/coi-serviceworker.js`
+- Git configurado e remoto publicado: `origin` → `https://github.com/ruinedprince/FreqMap.git`
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Executando localmente
+
+```bash
+npm install
+npm run dev
+# abrir http://localhost:5173
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Diretrizes de desenvolvimento
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Código em TypeScript, alta legibilidade e nomes descritivos
+- Evitar bloqueios de UI: análises pesadas irão para Web Workers
+- Carregar módulos WASM sob demanda (após a versão 0.2)
+- Versionar schemas JSON (analysis/plan/presets) com Zod (após 0.2)
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Arquitetura (planejada)
+
+- Decodificação: Web Audio API (WAV/MP3). FLAC via `ffmpeg.wasm` (lazy)
+- DSP: `essentia.js` (FFT/STFT, cromas, YIN/pyin, KeyExtractor) + `ebur128-wasm` para LUFS
+- Segmentação: novidade espectral (fluxo espectral + cromas + energia) e silêncio
+- Estéreo: análise Mid/Side; métricas e recomendações direcionadas
+- Mapeamento determinístico para sugestões (EQ, de-esser, compressão, reverb, limiter, gate, autotune)
+
+## Exportação e armazenamento (planejado)
+
+- JSON: `analysis.json` e `plan.json` (globais + por segmento)
+- PDF: relatório amigável ao usuário
+- Local-first: IndexedDB (metadados/presets), File System Access API (arquivos do usuário)
+
+## Roadmap
+
+Consulte o arquivo `ROADMAP_0.x_to_1.0.txt` na raiz com as versões 0.x → 1.0, metas e entregáveis.
+
+## Licença
+
+Definir (ex.: MIT) em versões futuras.
+
