@@ -1,0 +1,42 @@
+FreqMap — Template de Pull Request
+=================================
+
+Título
+- feat(v0.x): <resumo curto>
+- fix(v0.x): <resumo curto>
+
+Resumo
+- Contexto do problema ou objetivo da versão.
+- O que este PR entrega.
+
+Mudanças
+- [ ] Upload/decodificação
+- [ ] Visualização/UI
+- [ ] DSP/Workers
+- [ ] Armazenamento/Exportação
+- [ ] Documentação (README/ROADMAP)
+- [ ] Build/Config
+
+Como testar
+1) npm install
+2) npm run dev
+3) Passos específicos (arquivo(s) de exemplo, navegação, etc.)
+
+Evidências (opcional)
+- Prints/Vídeos/GIFs
+
+Checklist
+- [ ] Mensagens de commit seguem Conventional Commits
+- [ ] README.md atualizado (status/stack)
+- [ ] ROADMAP_0.x_to_1.0.txt atualizado para a versão
+- [ ] Fluxo local (dev) testado em desktop e mobile
+- [ ] COOP/COEP mantém Threads/SIMD quando aplicável
+- [ ] Performance aceitável (sem travar UI)
+- [ ] Sem regressões conhecidas
+
+Riscos e Observações
+- Pontos de atenção, limitações, débitos técnicos que ficarão para próxima versão.
+
+Issues relacionadas
+- Closes #
+- Related-to #
