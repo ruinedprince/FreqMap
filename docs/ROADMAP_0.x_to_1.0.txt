@@ -16,7 +16,7 @@ Versão 0.2 — Upload, Decodificação e Visual Básica (ENTREGUE)
 - Estrutura de estado (Zustand) e separação de camadas (UI vs Worker)
 - Esqueleto de Worker (Comlink a integrar)
 
-Versão 0.3 — Segmentação e Métricas Essenciais (EM DESENVOLVIMENTO)
+Versão 0.3 — Segmentação e Métricas Essenciais (ENTREGUE)
 - Segmentação por novidade espectral + detecção de silêncio
 - Métricas por segmento: pico, RMS, bandas (20–120, 120–500, 500–2k, 2–5k, 5–10k)
 - Métricas globais: LUFS integrado/short-term (ebur128-wasm)
