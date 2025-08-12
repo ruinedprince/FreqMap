@@ -9,7 +9,7 @@ Aplicação web 100% local-first que analisa faixas de voz e gera um plano técn
 - Análise por trechos (segmentação temporal) com sugestões específicas por intervalo
 - Exportação de plano em JSON/PDF e armazenamento local versionado
 
-## Stack (v0.2)
+## Stack (v0.3 em desenvolvimento)
 
 - Frontend: React + TypeScript (Vite)
 - Estilos: Tailwind CSS v4
@@ -17,15 +17,15 @@ Aplicação web 100% local-first que analisa faixas de voz e gera um plano técn
 - Estado: Zustand
 - Visualização: wavesurfer.js (waveform). uPlot (planejado)
 
-## Status atual (v0.2)
+## Status atual (v0.3 em desenvolvimento)
 
-- Projeto inicial criado com Vite + React + TS
+- Projeto inicial com Vite + React + TS
 - Tailwind v4 habilitado (ver `src/index.css`)
-- Cabeçalhos COOP/COEP no `vite.config.ts` e registro de `public/coi-serviceworker.js`
+- COOP/COEP no `vite.config.ts` + `public/coi-serviceworker.js`
 - Upload local de áudio (WAV/MP3), decodificação via Web Audio API e visualização da waveform
 - Estado global com Zustand (buffer + metadados)
-- Worker de DSP esqueleto criado (preparado para Comlink)
-- Git configurado: branch `v0.2` publicada; `main` estável
+- Worker de DSP esqueleto (Comlink a integrar)
+- Fluxo de versionamento: branch `v0.3` aberta e publicada; PR para `main` seguirá quando concluído
 
 ## Executando localmente
 
