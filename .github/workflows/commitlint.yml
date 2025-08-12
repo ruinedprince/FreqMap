@@ -15,5 +15,8 @@ jobs:
         with:
           node-version: 22
       - run: npm ci
-      - run: npm install --no-save @commitlint/{config-conventional,cli}
-      - run: npx commitlint --from=origin/main --to=HEAD --verbose || echo "Aviso: commitlint falhou. Ajuste as mensagens de commit."
+      - run: npm install --no-save @commitlint/config-conventional @commitlint/cli
+      - name: Commit message lint
+        shell: bash
+        run: |
+          npx commitlint --from="${{ github.base_ref }}" --to=HEAD --verbose || echo "Aviso: commitlint falhou. Ajuste as mensagens de commit."
