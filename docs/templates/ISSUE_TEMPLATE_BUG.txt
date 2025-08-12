@@ -1,0 +1,35 @@
+FreqMap — Template de Issue (Bug)
+================================
+
+Título
+- fix: <resumo do problema>
+
+Descrição
+- O que está acontecendo? Qual o comportamento atual?
+- Qual seria o comportamento esperado?
+
+Ambiente
+- SO/Navegador/Versão
+- Dispositivo (desktop/mobile), performance observada
+
+Passos para reproduzir
+1) ...
+2) ...
+3) ...
+
+Evidências
+- Logs/console
+- Prints/Vídeos
+
+Escopo e impacto
+- Trechos/fluxos afetados
+- Severidade (baixa/média/alta)
+
+Checklist
+- [ ] Reproduzível
+- [ ] Passos claros
+- [ ] Ambiente informado
+- [ ] Possível correlação com versão (ex.: v0.2)
+
+Relacionado
+- PRs/Issues: #

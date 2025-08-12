@@ -9,12 +9,12 @@ Versão 0.1 — Bootstrap (ENTREGUE)
 - COOP/COEP (dev/preview) + coi-serviceworker
 - Git + GitHub (branch main)
 
-Versão 0.2 — Upload, Decodificação e Visual Básica
+Versão 0.2 — Upload, Decodificação e Visual Básica (ENTREGUE)
 - Upload de arquivos (WAV/MP3; detectar FLAC)
 - Decodificação via Web Audio API
-- Visualização de waveform (wavesurfer.js) e marcação de regiões
+- Visualização de waveform (wavesurfer.js)
 - Estrutura de estado (Zustand) e separação de camadas (UI vs Worker)
-- Esqueleto de Worker (Comlink)
+- Esqueleto de Worker (Comlink a integrar)
 
 Versão 0.3 — Segmentação e Métricas Essenciais
 - Segmentação por novidade espectral + detecção de silêncio

@@ -1,0 +1,30 @@
+FreqMap — Template de Issue (Feature)
+====================================
+
+Título
+- feat: <resumo da proposta>
+
+Contexto
+- Problema/oportunidade que a feature atende
+- Relação com o roadmap (qual versão?)
+
+Escopo proposto
+- Requisitos funcionais
+- Requisitos não funcionais (perf, UX, compatibilidade)
+
+Critérios de aceitação
+- [ ] ...
+- [ ] ...
+- [ ] ...
+
+Impactos
+- Partes do sistema afetadas (UI, DSP/Workers, storage, build)
+- Riscos/limitações
+
+Definição de pronto (DoD)
+- [ ] Documentação atualizada (README/ROADMAP)
+- [ ] Testes manuais em desktop/mobile
+- [ ] Performance aceitável
+
+Relacionado
+- PRs/Issues: #

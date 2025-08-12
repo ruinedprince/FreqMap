@@ -1,0 +1,21 @@
+name: Branch Policy
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  enforce:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check source branch naming
+        shell: bash
+        run: |
+          HEAD_REF="${{ github.event.pull_request.head.ref }}"
+          if [[ "$HEAD_REF" =~ ^v([0-9]+)\.([0-9]+)$ ]]; then
+            echo "Branch de origem válida: $HEAD_REF"
+            exit 0
+          else
+            echo "Apenas PRs de branches vX.Y podem ser mesclados na main. Branch atual: $HEAD_REF"
+            exit 1
+          fi

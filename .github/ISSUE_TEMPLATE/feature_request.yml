@@ -1,0 +1,46 @@
+name: Feature request
+description: Sugerir uma nova funcionalidade
+labels: [enhancement]
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto
+      description: Qual problema/oportunidade esta feature resolve?
+      placeholder: Explique o contexto e a motivação
+    validations:
+      required: true
+  - type: input
+    id: target_version
+    attributes:
+      label: Versão alvo
+      description: Em qual versão do roadmap a feature se encaixa?
+      placeholder: v0.3
+    validations:
+      required: false
+  - type: textarea
+    id: scope
+    attributes:
+      label: Escopo proposto
+      description: Requisitos funcionais e não funcionais (perf, UX, compatibilidade)
+      placeholder: Liste os requisitos
+    validations:
+      required: true
+  - type: checkboxes
+    id: acceptance
+    attributes:
+      label: Critérios de aceitação
+      options:
+        - label: Critério 1
+        - label: Critério 2
+        - label: Critério 3
+    validations:
+      required: false
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impactos
+      description: Partes do sistema afetadas e riscos
+      placeholder: UI, DSP/Workers, storage, build, etc.
+    validations:
+      required: false

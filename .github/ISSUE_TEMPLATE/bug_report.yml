@@ -1,0 +1,46 @@
+name: Bug report
+description: Reportar um problema/erro
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição
+      description: Descreva o problema observado e o comportamento esperado.
+      placeholder: O que está acontecendo? O que deveria acontecer?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versão
+      description: Qual versão/branch? (ex.: v0.2)
+      placeholder: v0.2
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Ambiente
+      description: SO/Navegador/Dispositivo
+      placeholder: Windows 11 / Chrome 126 / Desktop
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para reproduzir
+      placeholder: |
+        1) ...
+        2) ...
+        3) ...
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidências
+      description: Logs/prints/vídeos (opcional)
+      placeholder: Cole aqui links ou informações relevantes
+    validations:
+      required: false
