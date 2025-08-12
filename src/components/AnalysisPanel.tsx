@@ -9,6 +9,7 @@ export default function AnalysisPanel() {
   const [segments, setSegments] = useState<
     Array<{ id: string; startS: number; endS: number; durationS: number; rmsDbfs: number; spectralFluxMean: number }>
   >([])
+  const [pitchKey, setPitchKey] = useState<{ pitch?: { medianHz: number; stabilityCentsStd: number; voicedRatio: number }; key?: { name: string; scale: 'major' | 'minor'; confidence: number } } | null>(null)
 
   const worker = useMemo(() => new Worker(new URL('../workers/dsp.worker.ts', import.meta.url), { type: 'module' }), [])
   const api = useMemo(() => wrap<DspWorkerApi>(worker), [worker])
@@ -22,6 +23,7 @@ export default function AnalysisPanel() {
       setSegments(
         res.segments.map((s) => ({ id: s.id, startS: s.startS, endS: s.endS, durationS: s.durationS, rmsDbfs: s.rmsDbfs, spectralFluxMean: s.spectralFluxMean }))
       )
+      setPitchKey({ pitch: res.pitch, key: res.key })
     } finally {
       setLoading(false)
     }
@@ -45,6 +47,17 @@ export default function AnalysisPanel() {
               </li>
             ))}
           </ul>
+          {pitchKey && (
+            <div className="mt-4">
+              <div className="font-medium">Resumo de pitch/tonalidade</div>
+              <div className="text-xs text-slate-400">
+                Pitch mediano: {pitchKey.pitch?.medianHz ? pitchKey.pitch.medianHz.toFixed(1) + ' Hz' : '—'} | estabilidade: {pitchKey.pitch ? pitchKey.pitch.stabilityCentsStd.toFixed(1) + ' cents' : '—'} | voz: {pitchKey.pitch ? Math.round((pitchKey.pitch.voicedRatio || 0) * 100) + '%' : '—'}
+              </div>
+              <div className="text-xs text-slate-400">
+                Tonalidade: {pitchKey.key ? `${pitchKey.key.name} ${pitchKey.key.scale}` : '—'} (confiança: {pitchKey.key ? Math.round((pitchKey.key.confidence || 0) * 100) + '%' : '—'})
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

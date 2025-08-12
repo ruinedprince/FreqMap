@@ -22,6 +22,16 @@ export type AnalysisResult = {
   sampleRate: number
   numChannels: number
   segments: SegmentMetrics[]
+  pitch?: {
+    medianHz: number
+    stabilityCentsStd: number
+    voicedRatio: number
+  }
+  key?: {
+    name: string // ex.: C, G#, etc
+    scale: 'major' | 'minor'
+    confidence: number // 0..1
+  }
 }
 
 
