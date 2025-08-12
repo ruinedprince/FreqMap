@@ -226,7 +226,6 @@ const api: DspWorkerApi = {
       ? new Float32Array(channelData[0].map((v, i) => 0.5 * (v + channelData[1][i] || 0)))
       : channelData[0]
     const segments = await analyzeMidChannel(mid, sampleRate)
-
     // Pitch (YIN simplificado) e Key (cromas + correlação) — protótipo leve
     const pitch = estimatePitchStats(mid, sampleRate)
     const key = estimateKey(mid, sampleRate)
@@ -235,7 +234,6 @@ const api: DspWorkerApi = {
 }
 
 expose(api)
-
 // -------- Pitch (YIN simplificado) --------
 function estimatePitchStats(signal: Float32Array, sampleRate: number) {
   const frameSize = Math.floor(0.04 * sampleRate) // ~40ms
