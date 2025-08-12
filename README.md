@@ -9,7 +9,7 @@ Aplicação web 100% local-first que analisa faixas de voz e gera um plano técn
 - Análise por trechos (segmentação temporal) com sugestões específicas por intervalo
 - Exportação de plano em JSON/PDF e armazenamento local versionado
 
-## Stack (v0.3)
+## Stack (v0.4 em desenvolvimento)
 
 - Frontend: React + TypeScript (Vite)
 - Estilos: Tailwind CSS v4
@@ -17,7 +17,7 @@ Aplicação web 100% local-first que analisa faixas de voz e gera um plano técn
 - Estado: Zustand
 - Visualização: wavesurfer.js (waveform). uPlot (planejado)
 
-## Status atual (v0.3)
+## Status atual (v0.4 em desenvolvimento)
 
 - Projeto com Vite + React + TS
 - Tailwind v4 habilitado (ver `src/index.css`)
@@ -25,6 +25,7 @@ Aplicação web 100% local-first que analisa faixas de voz e gera um plano técn
 - Upload local de áudio (WAV/MP3), decodificação via Web Audio API e visualização da waveform
 - Estado global com Zustand (buffer + metadados)
 - Análise por trechos em Web Worker (Comlink): segmentação por novidade/silêncio e métricas por segmento (RMS/pico, centróide espectral, bandas, spectral flux)
+- Próximo: pitch tracking (YIN) e detecção de tonalidade (cromas + correlação) com confiança
 - Infra CI/CD: templates nativos de PR/Issues, checks de CI e commitlint, release automático ao merge em `main`
 
 ## Executando localmente

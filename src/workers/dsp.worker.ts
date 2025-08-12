@@ -226,10 +226,157 @@ const api: DspWorkerApi = {
       ? new Float32Array(channelData[0].map((v, i) => 0.5 * (v + channelData[1][i] || 0)))
       : channelData[0]
     const segments = await analyzeMidChannel(mid, sampleRate)
-    return { sampleRate, numChannels: channelData.length, segments }
+    // Pitch (YIN simplificado) e Key (cromas + correlação) — protótipo leve
+    const pitch = estimatePitchStats(mid, sampleRate)
+    const key = estimateKey(mid, sampleRate)
+    return { sampleRate, numChannels: channelData.length, segments, pitch, key }
   },
 }
 
 expose(api)
+// -------- Pitch (YIN simplificado) --------
+function estimatePitchStats(signal: Float32Array, sampleRate: number) {
+  const frameSize = Math.floor(0.04 * sampleRate) // ~40ms
+  const hop = Math.floor(frameSize / 2)
+  const frames = frameSignal(signal, frameSize, hop)
+  const pitches: number[] = []
+  let voicedCount = 0
+  for (const fr of frames) {
+    const hz = yinPitch(fr, sampleRate)
+    if (hz > 0) {
+      pitches.push(hz)
+      voicedCount++
+    }
+  }
+  pitches.sort((a, b) => a - b)
+  const median = pitches.length ? pitches[Math.floor(pitches.length / 2)] : 0
+  // desvio padrão em cents
+  const cents = pitches.map((h) => (1200 * Math.log2(h / Math.max(1e-6, median === 0 ? h : median))))
+  const mean = cents.reduce((a, b) => a + b, 0) / Math.max(1, cents.length)
+  const variance = cents.reduce((a, b) => a + (b - mean) * (b - mean), 0) / Math.max(1, cents.length)
+  const std = Math.sqrt(variance)
+  return {
+    medianHz: isFinite(median) ? median : 0,
+    stabilityCentsStd: isFinite(std) ? std : 0,
+    voicedRatio: frames.length ? voicedCount / frames.length : 0,
+  }
+}
+
+function yinPitch(frame: Float32Array, sampleRate: number): number {
+  const N = frame.length
+  const tauMax = Math.floor(sampleRate / 80) // 80 Hz
+  const tauMin = Math.floor(sampleRate / 1000) // 1 kHz limite superior
+  const d = new Float32Array(tauMax + 1)
+  for (let tau = tauMin; tau <= tauMax; tau++) {
+    let sum = 0
+    for (let i = 0; i < N - tau; i++) {
+      const diff = frame[i] - frame[i + tau]
+      sum += diff * diff
+    }
+    d[tau] = sum
+  }
+  // cumulativa normalizada
+  const cum = new Float32Array(tauMax + 1)
+  cum[0] = 1
+  let running = 0
+  for (let tau = 1; tau <= tauMax; tau++) {
+    running += d[tau]
+    cum[tau] = d[tau] * tau / Math.max(1e-9, running)
+  }
+  // pick mínimo abaixo de threshold
+  const threshold = 0.1
+  let bestTau = -1
+  for (let tau = tauMin + 1; tau <= tauMax; tau++) {
+    if (cum[tau] < threshold && cum[tau] <= cum[tau + 1]) {
+      bestTau = tau
+      break
+    }
+  }
+  if (bestTau < 0) return 0
+  return sampleRate / bestTau
+}
+
+// -------- Key detection (cromas + Krumhansl) --------
+function estimateKey(signal: Float32Array, sampleRate: number) {
+  // Cromas simplificados via STFT coarse
+  const frame = 4096
+  const hop = 1024
+  const win = hannWindow(frame)
+  const frames = frameSignal(signal, frame, hop)
+  const chroma = new Float32Array(12)
+  for (const fr of frames) {
+    if (fr.length < frame) break
+    const mag = magnitudeSpectrumSimple(fr, win)
+    accumulateChroma(mag, sampleRate, chroma)
+  }
+  // normalizar
+  const sum = chroma.reduce((a, b) => a + b, 0)
+  for (let i = 0; i < 12; i++) chroma[i] = sum ? chroma[i] / sum : 0
+  const major = krumhanslCorrelation(chroma, 'major')
+  const minor = krumhanslCorrelation(chroma, 'minor')
+  const best = major.value >= minor.value ? major : minor
+  return { name: pitchClassName(best.index), scale: best.scale, confidence: Math.max(0, Math.min(1, best.value)) as 1 | 0 as number }
+}
+
+function magnitudeSpectrumSimple(frame: Float32Array, win: Float32Array) {
+  const N = frame.length
+  const mags = new Float32Array(N / 2 + 1)
+  const w = applyWindow(frame, win)
+  for (let k = 0; k <= N / 2; k++) {
+    let re = 0,
+      im = 0
+    for (let n = 0; n < N; n++) {
+      const phi = (-2 * Math.PI * k * n) / N
+      re += w[n] * Math.cos(phi)
+      im += w[n] * Math.sin(phi)
+    }
+    mags[k] = Math.sqrt(re * re + im * im)
+  }
+  return mags
+}
+
+function accumulateChroma(mag: Float32Array, sampleRate: number, chroma: Float32Array) {
+  const N = (mag.length - 1) * 2
+  const binHz = sampleRate / N
+  for (let k = 1; k < mag.length; k++) {
+    const f = k * binHz
+    if (f < 50 || f > 5000) continue
+    const midi = 69 + 12 * Math.log2(f / 440)
+    const pc = ((Math.round(midi) % 12) + 12) % 12
+    chroma[pc] += mag[k]
+  }
+}
+
+function krumhanslCorrelation(chroma: Float32Array, scale: 'major' | 'minor') {
+  const profiles: Record<'major' | 'minor', number[]> = {
+    major: [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88],
+    minor: [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17],
+  }
+  let bestIndex = 0
+  let bestVal = -Infinity
+  for (let shift = 0; shift < 12; shift++) {
+    let sxy = 0,
+      sx2 = 0,
+      sy2 = 0
+    for (let i = 0; i < 12; i++) {
+      const x = chroma[(i + shift) % 12]
+      const y = profiles[scale][i]
+      sxy += x * y
+      sx2 += x * x
+      sy2 += y * y
+    }
+    const corr = sxy / Math.max(1e-9, Math.sqrt(sx2 * sy2))
+    if (corr > bestVal) {
+      bestVal = corr
+      bestIndex = shift
+    }
+  }
+  return { index: bestIndex, value: bestVal, scale }
+}
+
+function pitchClassName(index: number): string {
+  const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+  return names[((index % 12) + 12) % 12]
+}
 
 

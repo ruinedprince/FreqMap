@@ -23,7 +23,7 @@ Versão 0.3 — Segmentação e Métricas Essenciais (ENTREGUE)
 - Estéreo: Mid/Side básico
 - UI: tabela/lista de segmentos com indicadores de issues
 
-Versão 0.4 — Pitch e Tonalidade com Validação
+Versão 0.4 — Pitch e Tonalidade com Validação (EM DESENVOLVIMENTO)
 - Pitch tracking (YIN/pyin em essentia.js)
 - Cromas + KeyExtractor com confiança
 - Validação/override da tonalidade informada pelo usuário
