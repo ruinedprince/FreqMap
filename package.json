@@ -1,7 +1,7 @@
 {
   "name": "freqmap",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.3.0-alpha.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "comlink": "^4.4.2",
+    "ebur128-wasm": "^3.0.0",
+    "meyda": "^5.6.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "wavesurfer.js": "^7.10.1",

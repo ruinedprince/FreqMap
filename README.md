@@ -9,7 +9,7 @@ Aplicação web 100% local-first que analisa faixas de voz e gera um plano técn
 - Análise por trechos (segmentação temporal) com sugestões específicas por intervalo
 - Exportação de plano em JSON/PDF e armazenamento local versionado
 
-## Stack (v0.2)
+## Stack (v0.3)
 
 - Frontend: React + TypeScript (Vite)
 - Estilos: Tailwind CSS v4
@@ -17,15 +17,15 @@ Aplicação web 100% local-first que analisa faixas de voz e gera um plano técn
 - Estado: Zustand
 - Visualização: wavesurfer.js (waveform). uPlot (planejado)
 
-## Status atual (v0.2)
+## Status atual (v0.3)
 
-- Projeto inicial criado com Vite + React + TS
+- Projeto com Vite + React + TS
 - Tailwind v4 habilitado (ver `src/index.css`)
-- Cabeçalhos COOP/COEP no `vite.config.ts` e registro de `public/coi-serviceworker.js`
+- COOP/COEP no `vite.config.ts` + `public/coi-serviceworker.js`
 - Upload local de áudio (WAV/MP3), decodificação via Web Audio API e visualização da waveform
 - Estado global com Zustand (buffer + metadados)
-- Worker de DSP esqueleto criado (preparado para Comlink)
-- Git configurado: branch `v0.2` publicada; `main` estável
+- Análise por trechos em Web Worker (Comlink): segmentação por novidade/silêncio e métricas por segmento (RMS/pico, centróide espectral, bandas, spectral flux)
+- Infra CI/CD: templates nativos de PR/Issues, checks de CI e commitlint, release automático ao merge em `main`
 
 ## Executando localmente
 
@@ -58,7 +58,7 @@ npm run dev
 
 ## Roadmap
 
-Consulte o arquivo `ROADMAP_0.x_to_1.0.txt` na raiz com as versões 0.x → 1.0, metas e entregáveis.
+Consulte `docs/ROADMAP_0.x_to_1.0.txt` para as versões 0.x → 1.0, metas e entregáveis.
 
 ## Licença
 

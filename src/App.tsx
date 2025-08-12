@@ -5,6 +5,7 @@ import './App.css'
 import './index.css'
 import Upload from './components/Upload'
 import Waveform from './components/Waveform'
+import AnalysisPanel from './components/AnalysisPanel'
 
 function App() {
 
@@ -22,6 +23,7 @@ function App() {
       <div className="mt-4 container-app">
         <Upload />
         <Waveform />
+        <AnalysisPanel />
       </div>
       <p className="read-the-docs mt-4 text-sm text-slate-400">
         Carregue um arquivo de áudio (WAV/MP3) para visualizar a forma de onda.

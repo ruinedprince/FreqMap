@@ -1,0 +1,81 @@
+FreqMap — Padrões de Branches e Commits
+======================================
+
+Objetivo
+- Padronizar o fluxo de versionamento: cada versão 0.x em uma branch própria que só vai para main após teste/revisão e correções.
+- Padronizar mensagens de commit (Conventional Commits) para facilitar histórico, changelog e PRs.
+
+1) Estratégia de branches
+- main: estável, somente código aprovado/testado. Criar tag a cada release (ex.: v0.2.0).
+- vX.Y: branch de versão (ex.: v0.2, v0.3). Trabalhos referentes àquela versão acontecem aqui.
+- feature/<slug> (opcional): sub-branches temporárias a partir de vX.Y para tarefas grandes. Merge de volta em vX.Y.
+- hotfix/<x.y.z>: correções urgentes pós-release (baseado em main) que geram tag de patch (ex.: v0.2.1).
+
+2) Fluxo por versão (checklist)
+- Criar branch de versão: git checkout -b v0.3
+- Implementar a versão conforme roadmap.
+- Atualizar documentação: README.md e ROADMAP_0.x_to_1.0.txt (obrigatório por versão).
+- Subir a branch: git push -u origin v0.3
+- Abrir PR: https://github.com/ruinedprince/FreqMap/pull/new/v0.3
+- Revisão e testes manuais (desktop/mobile): upload, decodificação, UI, build.
+- Corrigir eventuais bugs na mesma branch v0.3 e atualizar o PR.
+- Aprovar e fazer merge no GitHub (merge commit). Opcional: deletar a branch remota.
+- Taggear release: git checkout main && git pull && git tag -a v0.3.0 -m "release v0.3.0" && git push origin v0.3.0
+
+3) Convenção de commits (Conventional Commits)
+Tipos suportados (minúsculo):
+- feat: nova funcionalidade
+- fix: correção de bug
+- docs: documentação (README, ROADMAP, etc.)
+- style: formatação/estilo, sem mudança de lógica
+- refactor: refatoração sem mudança de comportamento
+- perf: melhorias de performance
+- test: testes
+- build: mudanças de build/deps
+- ci: pipeline/automação
+- chore: tarefas diversas (ex.: configs)
+- revert: reverter commit
+
+Formato
+- <type>(<scope opcional>): <resumo>
+- Ex.: feat(v0.2): upload (WAV/MP3) + waveform (wavesurfer)
+- Corpo (opcional): motivação/decisões, referências a issues/PRs.
+- Rodapé (opcional):
+  - BREAKING CHANGE: <descrição>
+  - Closes #123, Related-to #456
+
+4) Nomes de branches
+- Versão: v0.2, v0.3, ..., v1.0
+- Feature: feature/segmentacao-novidade-espectral (baseado em v0.3)
+- Hotfix: hotfix/0.2.1-silencio-decodificacao (baseado em main)
+
+5) Comandos úteis
+- Nova versão: git checkout -b v0.3 && git push -u origin v0.3
+- Sincronizar v0.3 com main (se necessário):
+  - git fetch origin
+  - git checkout v0.3
+  - git merge origin/main   # ou rebase se preferir histórico linear
+- Abrir PR (navegador): https://github.com/ruinedprince/FreqMap/pull/new/v0.3
+- Após merge na main, criar tag:
+  - git checkout main && git pull
+  - git tag -a v0.3.0 -m "release v0.3.0"
+  - git push origin v0.3.0
+
+6) Mapa estimado de branches (ASCII)
+
+main: o───o───o───o───o (tags: v0.1.0) ───o (v0.2.0) ─── o (v0.3.0)
+             \                \
+              \                └─ merge v0.2 → main
+               \
+ v0.2:          o───o───o───o───o (PR aberto) ──┘
+                                   \
+ feature/...:                        o──o (merge → v0.2)
+
+Princípios
+- Cada versão deve atualizar README e ROADMAP antes do PR.
+- Commits pequenos e descritivos; preferir PRs temáticos.
+- Evitar trabalho direto em main.
+- Tags somente na main após o merge da versão.
+
+Observações
+- Se a GitHub CLI (gh) estiver autenticada, é possível automatizar criação de PR e release; por padrão, use o fluxo via navegador.
