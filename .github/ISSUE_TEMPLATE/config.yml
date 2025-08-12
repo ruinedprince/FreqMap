@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Roadmap
+    url: https://github.com/ruinedprince/FreqMap/blob/main/ROADMAP_0.x_to_1.0.txt
+    about: Consulte metas e entregáveis por versão
