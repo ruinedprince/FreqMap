@@ -123,6 +123,7 @@ async function analyzeMidChannel(channelData: Float32Array, sampleRate: number):
     const flux = spectralFlux(magPrev, mag)
     fluxSeries.push(flux)
     magPrev = mag
+    if (i % 10 === 0) reportProgress(Math.min(70, Math.round((i / frames.length) * 70)))
   }
 
   // Detecção simples de bordas por novidade (flux) + silêncio
@@ -167,8 +168,12 @@ async function analyzeMidChannel(channelData: Float32Array, sampleRate: number):
       centroidCount = 0
     let bandsAcc = { band20_120: 0, band120_500: 0, band500_2000: 0, band2000_5000: 0, band5000_10000: 0 }
     let bandCount = 0
+    let sibilanceAcc = 0
+    let sibilanceCount = 0
 
     magPrev = null
+    // acumular espectro médio do segmento para detecção de ressonâncias
+    let avgMag: Float32Array | null = null
     for (let f = fa; f <= fb && f < frames.length; f++) {
       const fr = frames[f]
       peakDb = Math.max(peakDb, computePeakDbfs(fr))
@@ -196,6 +201,64 @@ async function analyzeMidChannel(channelData: Float32Array, sampleRate: number):
       bandCount++
       fluxAcc += spectralFlux(magPrev, mag)
       magPrev = mag
+
+      // sibilância: energia 6–10 kHz vs 1–5 kHz
+      const sRatio = (() => {
+        const sumBand = (fromHz: number, toHz: number) => {
+          const fromBin = Math.max(1, Math.floor(fromHz / binHz))
+          const toBin = Math.min(mag.length - 1, Math.floor(toHz / binHz))
+          let sum = 0
+          for (let b = fromBin; b <= toBin; b++) sum += mag[b]
+          return sum
+        }
+        const hi = sumBand(6000, 10000)
+        const lo = sumBand(1000, 5000)
+        return lo > 0 ? hi / lo : 0
+      })()
+      if (isFinite(sRatio)) {
+        sibilanceAcc += sRatio
+        sibilanceCount++
+      }
+
+      // espectro médio
+      if (!avgMag) avgMag = new Float32Array(mag.length)
+      for (let k = 0; k < mag.length; k++) avgMag[k] += mag[k]
+    }
+    reportProgress(Math.min(95, 70 + Math.round(((idx + 1) / Math.max(1, merged.length)) * 25)))
+
+    // calcular ressonâncias: picos estreitos no espectro médio (200–4000 Hz)
+    let resonances: Array<{ frequencyHz: number; gainDb: number }> = []
+    if (bandCount > 0 && avgMag) {
+      for (let k = 0; k < avgMag.length; k++) avgMag[k] /= bandCount
+      const N = (avgMag.length - 1) * 2
+      const binHz = sampleRate / N
+      const dbMag = new Float32Array(avgMag.length)
+      for (let k = 0; k < avgMag.length; k++) dbMag[k] = 20 * Math.log10(avgMag[k] + 1e-12)
+      // cálculo de baseline por média móvel para destacar picos
+      const win = 5
+      const baseline = new Float32Array(dbMag.length)
+      for (let i = 0; i < dbMag.length; i++) {
+        let s = 0,
+          c = 0
+        for (let j = i - win; j <= i + win; j++) {
+          if (j >= 0 && j < dbMag.length) {
+            s += dbMag[j]
+            c++
+          }
+        }
+        baseline[i] = c ? s / c : dbMag[i]
+      }
+      for (let i = 2; i < dbMag.length - 2; i++) {
+        const fHz = i * binHz
+        if (fHz < 200 || fHz > 4000) continue
+        const prominence = dbMag[i] - baseline[i]
+        const isPeak = dbMag[i] > dbMag[i - 1] && dbMag[i] >= dbMag[i + 1]
+        if (isPeak && prominence > 3) {
+          resonances.push({ frequencyHz: fHz, gainDb: prominence })
+        }
+      }
+      resonances.sort((a, b) => b.gainDb - a.gainDb)
+      resonances = resonances.slice(0, 3)
     }
 
     results.push({
@@ -214,6 +277,8 @@ async function analyzeMidChannel(channelData: Float32Array, sampleRate: number):
         band2000_5000: bandCount ? bandsAcc.band2000_5000 / bandCount : -120,
         band5000_10000: bandCount ? bandsAcc.band5000_10000 / bandCount : -120,
       },
+      sibilanceRatio: sibilanceCount ? sibilanceAcc / sibilanceCount : 0,
+      resonances,
     })
   }
   return results
@@ -228,12 +293,17 @@ const api: DspWorkerApi = {
     const segments = await analyzeMidChannel(mid, sampleRate)
     // Pitch (YIN simplificado) e Key (cromas + correlação) — protótipo leve
     const pitch = estimatePitchStats(mid, sampleRate)
+    reportProgress(90)
     const key = estimateKey(mid, sampleRate)
+    reportProgress(100)
     return { sampleRate, numChannels: channelData.length, segments, pitch, key }
   },
 }
 
 expose(api)
+function reportProgress(p: number) {
+  ;(self as any).postMessage({ __type: 'progress', value: p })
+}
 // -------- Pitch (YIN simplificado) --------
 function estimatePitchStats(signal: Float32Array, sampleRate: number) {
   const frameSize = Math.floor(0.04 * sampleRate) // ~40ms

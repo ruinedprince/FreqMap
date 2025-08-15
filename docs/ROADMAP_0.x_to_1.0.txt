@@ -23,13 +23,13 @@ Versão 0.3 — Segmentação e Métricas Essenciais (ENTREGUE)
 - Estéreo: Mid/Side básico
 - UI: tabela/lista de segmentos com indicadores de issues
 
-Versão 0.4 — Pitch e Tonalidade com Validação (EM DESENVOLVIMENTO)
+Versão 0.4 — Pitch e Tonalidade com Validação (ENTREGUE)
 - Pitch tracking (YIN/pyin em essentia.js)
 - Cromas + KeyExtractor com confiança
 - Validação/override da tonalidade informada pelo usuário
 - UI: badge de confiança e conflito "corrigido"
 
-Versão 0.5 — Sibilância e Ressonâncias
+Versão 0.5 — Sibilância e Ressonâncias (EM DESENVOLVIMENTO)
 - Sibilância: razão de energia 6–10 kHz vs 1–5 kHz
 - Ressonâncias: detecção de picos estreitos persistentes por segmento
 - UI: destaque visual por trecho (regiões/heatmap)

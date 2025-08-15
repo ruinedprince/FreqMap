@@ -6,24 +6,37 @@ import type { DspWorkerApi } from '../workers/dsp.worker'
 export default function AnalysisPanel() {
   const audioBuffer = useAppStore((s) => s.audioBuffer)
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState(0)
   const [segments, setSegments] = useState<
-    Array<{ id: string; startS: number; endS: number; durationS: number; rmsDbfs: number; spectralFluxMean: number }>
+    Array<{ id: string; startS: number; endS: number; durationS: number; rmsDbfs: number; spectralFluxMean: number; sibilanceRatio?: number; resonances?: Array<{ frequencyHz: number; gainDb: number }> }>
   >([])
   const [pitchKey, setPitchKey] = useState<{ pitch?: { medianHz: number; stabilityCentsStd: number; voicedRatio: number }; key?: { name: string; scale: 'major' | 'minor'; confidence: number } } | null>(null)
 
   const worker = useMemo(() => new Worker(new URL('../workers/dsp.worker.ts', import.meta.url), { type: 'module' }), [])
   const api = useMemo(() => wrap<DspWorkerApi>(worker), [worker])
+  // listener de progresso do worker (mensagens diretas)
+  useMemo(() => {
+    const onMsg = (e: MessageEvent) => {
+      const data: any = e.data
+      if (data && data.__type === 'progress') setProgress(data.value)
+    }
+    worker.addEventListener('message', onMsg)
+    return () => worker.removeEventListener('message', onMsg)
+  }, [worker])
 
   async function runAnalysis() {
     if (!audioBuffer) return
     setLoading(true)
+    setProgress(0)
     try {
       const channelData = Array.from({ length: audioBuffer.numberOfChannels }, (_, c) => audioBuffer.getChannelData(c))
       const res = await api.analyze({ channelData, sampleRate: audioBuffer.sampleRate })
-      setSegments(
-        res.segments.map((s) => ({ id: s.id, startS: s.startS, endS: s.endS, durationS: s.durationS, rmsDbfs: s.rmsDbfs, spectralFluxMean: s.spectralFluxMean }))
-      )
+      setSegments(res.segments.map((s) => ({ id: s.id, startS: s.startS, endS: s.endS, durationS: s.durationS, rmsDbfs: s.rmsDbfs, spectralFluxMean: s.spectralFluxMean, sibilanceRatio: s.sibilanceRatio, resonances: s.resonances })))
+      // sincroniza segmentos com store para Waveform pintar regiões
+      const setStoreSegments = useAppStore.getState().setSegments
+      setStoreSegments(res.segments.map((s) => ({ id: s.id, startS: s.startS, endS: s.endS, sibilanceRatio: s.sibilanceRatio, resonances: s.resonances })))
       setPitchKey({ pitch: res.pitch, key: res.key })
+      setProgress(100)
     } finally {
       setLoading(false)
     }
@@ -31,9 +44,17 @@ export default function AnalysisPanel() {
 
   return (
     <div className="mt-6">
-      <button className="px-4 py-2 rounded bg-emerald-600 text-white disabled:opacity-50" disabled={!audioBuffer || loading} onClick={runAnalysis}>
-        {loading ? 'Analisando…' : 'Analisar segmentos'}
-      </button>
+      <div className="flex items-center gap-3">
+        <button className="px-4 py-2 rounded bg-emerald-600 text-white disabled:opacity-50" disabled={!audioBuffer || loading} onClick={runAnalysis}>
+          {loading ? 'Analisando…' : 'Analisar segmentos'}
+        </button>
+        {progress > 0 && (
+          <div className="h-2 w-56 bg-slate-700 rounded">
+            <div className="h-2 bg-emerald-500 rounded" style={{ width: `${progress}%` }} />
+          </div>
+        )}
+        {progress > 0 && <span className="text-xs text-slate-400">{progress}%</span>}
+      </div>
       {segments.length > 0 && (
         <div className="mt-4 text-sm">
           <div className="font-medium mb-2">Segmentos detectados</div>
@@ -44,6 +65,8 @@ export default function AnalysisPanel() {
                 <span className="w-16">dur: {s.durationS.toFixed(2)}s</span>
                 <span className="w-20">RMS: {s.rmsDbfs.toFixed(1)} dBFS</span>
                 <span className="w-28">Flux: {s.spectralFluxMean.toFixed(3)}</span>
+                <span className="w-28">Sib: {s.sibilanceRatio ? s.sibilanceRatio.toFixed(2) : '—'}</span>
+                <span className="flex-1 truncate">Reson.: {s.resonances && s.resonances.length ? s.resonances.map(r => `${Math.round(r.frequencyHz)}Hz(+${r.gainDb.toFixed(1)}dB)`).join(', ') : '—'}</span>
               </li>
             ))}
           </ul>
