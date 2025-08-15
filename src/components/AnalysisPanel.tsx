@@ -7,7 +7,7 @@ export default function AnalysisPanel() {
   const audioBuffer = useAppStore((s) => s.audioBuffer)
   const [loading, setLoading] = useState(false)
   const [segments, setSegments] = useState<
-    Array<{ id: string; startS: number; endS: number; durationS: number; rmsDbfs: number; spectralFluxMean: number }>
+    Array<{ id: string; startS: number; endS: number; durationS: number; rmsDbfs: number; spectralFluxMean: number; sibilanceRatio?: number; resonances?: Array<{ frequencyHz: number; gainDb: number }> }>
   >([])
   const [pitchKey, setPitchKey] = useState<{ pitch?: { medianHz: number; stabilityCentsStd: number; voicedRatio: number }; key?: { name: string; scale: 'major' | 'minor'; confidence: number } } | null>(null)
 
@@ -20,9 +20,7 @@ export default function AnalysisPanel() {
     try {
       const channelData = Array.from({ length: audioBuffer.numberOfChannels }, (_, c) => audioBuffer.getChannelData(c))
       const res = await api.analyze({ channelData, sampleRate: audioBuffer.sampleRate })
-      setSegments(
-        res.segments.map((s) => ({ id: s.id, startS: s.startS, endS: s.endS, durationS: s.durationS, rmsDbfs: s.rmsDbfs, spectralFluxMean: s.spectralFluxMean }))
-      )
+      setSegments(res.segments.map((s) => ({ id: s.id, startS: s.startS, endS: s.endS, durationS: s.durationS, rmsDbfs: s.rmsDbfs, spectralFluxMean: s.spectralFluxMean, sibilanceRatio: s.sibilanceRatio, resonances: s.resonances })))
       setPitchKey({ pitch: res.pitch, key: res.key })
     } finally {
       setLoading(false)
@@ -44,6 +42,8 @@ export default function AnalysisPanel() {
                 <span className="w-16">dur: {s.durationS.toFixed(2)}s</span>
                 <span className="w-20">RMS: {s.rmsDbfs.toFixed(1)} dBFS</span>
                 <span className="w-28">Flux: {s.spectralFluxMean.toFixed(3)}</span>
+                <span className="w-28">Sib: {s.sibilanceRatio ? s.sibilanceRatio.toFixed(2) : '—'}</span>
+                <span className="flex-1 truncate">Reson.: {s.resonances && s.resonances.length ? s.resonances.map(r => `${Math.round(r.frequencyHz)}Hz(+${r.gainDb.toFixed(1)}dB)`).join(', ') : '—'}</span>
               </li>
             ))}
           </ul>

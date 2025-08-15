@@ -16,6 +16,8 @@ export type SegmentMetrics = {
   spectralFluxMean: number
   spectralCentroidMeanHz: number
   bandsDb: FrequencyBandsDb
+  sibilanceRatio: number // energia 6–10 kHz / 1–5 kHz (linear)
+  resonances: Array<{ frequencyHz: number; gainDb: number }>
 }
 
 export type AnalysisResult = {
