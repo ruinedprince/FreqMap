@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useAppStore } from '../lib/store'
-import { wrap } from 'comlink'
+import { wrap, proxy } from 'comlink'
 import type { DspWorkerApi } from '../workers/dsp.worker'
 
 export default function AnalysisPanel() {
@@ -14,13 +14,23 @@ export default function AnalysisPanel() {
 
   const worker = useMemo(() => new Worker(new URL('../workers/dsp.worker.ts', import.meta.url), { type: 'module' }), [])
   const api = useMemo(() => wrap<DspWorkerApi>(worker), [worker])
+  // listener de progresso do worker (mensagens diretas)
+  useMemo(() => {
+    const onMsg = (e: MessageEvent) => {
+      const data: any = e.data
+      if (data && data.__type === 'progress') setProgress(data.value)
+    }
+    worker.addEventListener('message', onMsg)
+    return () => worker.removeEventListener('message', onMsg)
+  }, [worker])
 
   async function runAnalysis() {
     if (!audioBuffer) return
     setLoading(true)
+    setProgress(0)
     try {
       const channelData = Array.from({ length: audioBuffer.numberOfChannels }, (_, c) => audioBuffer.getChannelData(c))
-      const res = await api.analyze({ channelData, sampleRate: audioBuffer.sampleRate, onProgress: (p: number) => setProgress(p) })
+      const res = await api.analyze({ channelData, sampleRate: audioBuffer.sampleRate })
       setSegments(res.segments.map((s) => ({ id: s.id, startS: s.startS, endS: s.endS, durationS: s.durationS, rmsDbfs: s.rmsDbfs, spectralFluxMean: s.spectralFluxMean, sibilanceRatio: s.sibilanceRatio, resonances: s.resonances })))
       // sincroniza segmentos com store para Waveform pintar regiões
       const setStoreSegments = useAppStore.getState().setSegments
