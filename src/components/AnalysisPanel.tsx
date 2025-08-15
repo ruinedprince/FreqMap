@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useAppStore } from '../lib/store'
-import { wrap, proxy } from 'comlink'
+import { wrap } from 'comlink'
 import type { DspWorkerApi } from '../workers/dsp.worker'
 
 export default function AnalysisPanel() {
