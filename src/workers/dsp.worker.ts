@@ -4,6 +4,7 @@ import type { AnalysisResult, SegmentMetrics } from '../lib/types'
 type AnalyzeParams = {
   channelData: Float32Array[]
   sampleRate: number
+  onProgress?: (percent: number) => void
 }
 
 export type DspWorkerApi = {
@@ -85,7 +86,7 @@ function computeBandsDb(mag: Float32Array, sampleRate: number): {
   }
 }
 
-async function analyzeMidChannel(channelData: Float32Array, sampleRate: number): Promise<SegmentMetrics[]> {
+async function analyzeMidChannel(channelData: Float32Array, sampleRate: number, onProgress?: (p: number) => void): Promise<SegmentMetrics[]> {
   const frameMs = 46.4 // ~2048 @44.1k
   const frameSize = Math.floor((frameMs / 1000) * sampleRate)
   const hopSize = Math.floor(frameSize / 2)
@@ -123,6 +124,7 @@ async function analyzeMidChannel(channelData: Float32Array, sampleRate: number):
     const flux = spectralFlux(magPrev, mag)
     fluxSeries.push(flux)
     magPrev = mag
+    if (onProgress && i % 10 === 0) onProgress(Math.min(70, Math.round((i / frames.length) * 70)))
   }
 
   // Detecção simples de bordas por novidade (flux) + silêncio
@@ -223,6 +225,7 @@ async function analyzeMidChannel(channelData: Float32Array, sampleRate: number):
       if (!avgMag) avgMag = new Float32Array(mag.length)
       for (let k = 0; k < mag.length; k++) avgMag[k] += mag[k]
     }
+    if (onProgress) onProgress(Math.min(95, 70 + Math.round(((idx + 1) / Math.max(1, merged.length)) * 25)))
 
     // calcular ressonâncias: picos estreitos no espectro médio (200–4000 Hz)
     let resonances: Array<{ frequencyHz: number; gainDb: number }> = []
@@ -283,15 +286,17 @@ async function analyzeMidChannel(channelData: Float32Array, sampleRate: number):
 }
 
 const api: DspWorkerApi = {
-  async analyze({ channelData, sampleRate }) {
+  async analyze({ channelData, sampleRate, onProgress }) {
     // Mid channel (L+R)/2 se estéreo
     const mid = channelData.length === 2
       ? new Float32Array(channelData[0].map((v, i) => 0.5 * (v + channelData[1][i] || 0)))
       : channelData[0]
-    const segments = await analyzeMidChannel(mid, sampleRate)
+    const segments = await analyzeMidChannel(mid, sampleRate, onProgress)
     // Pitch (YIN simplificado) e Key (cromas + correlação) — protótipo leve
     const pitch = estimatePitchStats(mid, sampleRate)
+    if (onProgress) onProgress(97)
     const key = estimateKey(mid, sampleRate)
+    if (onProgress) onProgress(100)
     return { sampleRate, numChannels: channelData.length, segments, pitch, key }
   },
 }
