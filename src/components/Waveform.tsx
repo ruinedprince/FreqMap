@@ -31,20 +31,25 @@ export default function Waveform() {
 
   // pintar/regenerar regiões quando segmentos mudarem
   useEffect(() => {
-    const regions = regionsRef.current
+    const regions = regionsRef.current as any
     if (!regions) return
-    regions.clear()
-    segments.forEach((seg) => {
-      const dur = Math.max(0.01, seg.endS - seg.startS)
-      const sib = seg.sibilanceRatio ?? 0
-      // cor baseada na sibilância (verde→amarelo→vermelho)
-      const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x))
-      const t = clamp((sib - 1.0) / 1.0, 0, 1) // ~1.0 ok, 2.0 alto
-      const r = Math.round(255 * t)
-      const g = Math.round(180 * (1 - t))
-      const color = `rgba(${r},${g},60,0.5)`
-      regions.addRegion({ start: seg.startS, end: seg.startS + dur, drag: false, resize: false, color })
-    })
+    try {
+      if (typeof regions.clearRegions === 'function') regions.clearRegions()
+      else if (typeof regions.clear === 'function') regions.clear()
+    } catch {}
+    try {
+      segments.forEach((seg) => {
+        const dur = Math.max(0.01, seg.endS - seg.startS)
+        const sib = seg.sibilanceRatio ?? 0
+        // cor baseada na sibilância (verde→amarelo→vermelho)
+        const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x))
+        const t = clamp((sib - 1.0) / 1.0, 0, 1)
+        const r = Math.round(255 * t)
+        const g = Math.round(180 * (1 - t))
+        const color = `rgba(${r},${g},60,0.5)`
+        regions.addRegion?.({ start: seg.startS, end: seg.startS + dur, drag: false, resize: false, color })
+      })
+    } catch {}
   }, [segments])
 
   if (!audioUrl) return null

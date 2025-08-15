@@ -293,7 +293,7 @@ const api: DspWorkerApi = {
     const segments = await analyzeMidChannel(mid, sampleRate)
     // Pitch (YIN simplificado) e Key (cromas + correlação) — protótipo leve
     const pitch = estimatePitchStats(mid, sampleRate)
-    reportProgress(97)
+    reportProgress(90)
     const key = estimateKey(mid, sampleRate)
     reportProgress(100)
     return { sampleRate, numChannels: channelData.length, segments, pitch, key }
