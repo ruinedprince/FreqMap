@@ -1,6 +1,13 @@
 import { create } from 'zustand'
 
-export type TimeSegment = { id: string; startS: number; endS: number; label?: string }
+export type TimeSegment = {
+  id: string
+  startS: number
+  endS: number
+  label?: string
+  sibilanceRatio?: number
+  resonances?: Array<{ frequencyHz: number; gainDb: number }>
+}
 
 type AppState = {
   fileName: string | null

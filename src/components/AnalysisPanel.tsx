@@ -21,6 +21,9 @@ export default function AnalysisPanel() {
       const channelData = Array.from({ length: audioBuffer.numberOfChannels }, (_, c) => audioBuffer.getChannelData(c))
       const res = await api.analyze({ channelData, sampleRate: audioBuffer.sampleRate })
       setSegments(res.segments.map((s) => ({ id: s.id, startS: s.startS, endS: s.endS, durationS: s.durationS, rmsDbfs: s.rmsDbfs, spectralFluxMean: s.spectralFluxMean, sibilanceRatio: s.sibilanceRatio, resonances: s.resonances })))
+      // sincroniza segmentos com store para Waveform pintar regiões
+      const setStoreSegments = useAppStore.getState().setSegments
+      setStoreSegments(res.segments.map((s) => ({ id: s.id, startS: s.startS, endS: s.endS, sibilanceRatio: s.sibilanceRatio, resonances: s.resonances })))
       setPitchKey({ pitch: res.pitch, key: res.key })
     } finally {
       setLoading(false)
